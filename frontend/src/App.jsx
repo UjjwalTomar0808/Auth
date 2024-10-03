@@ -4,7 +4,44 @@ import FloatingShape from "./components/FloatingShape";
 import SignUpPage from "./pages/SignUpPage";
 import LoginPage from "./pages/LoginPage";
 
+
+import { useAuthStore } from "./store/authStore";
+import { useEffect } from "react";
+
+// protect routes that require authentication
+const ProtectedRoute = ({ children }) => {
+	const { isAuthenticated, user } = useAuthStore();
+
+	if (!isAuthenticated) {
+		return <Navigate to='/login' replace />;
+	}
+
+	if (!user.isVerified) {
+		return <Navigate to='/verify-email' replace />;
+	}
+
+	return children;
+};
+
+// redirect authenticated users to the home page
+const RedirectAuthenticatedUser = ({ children }) => {
+	const { isAuthenticated, user } = useAuthStore();
+
+	if (isAuthenticated && user.isVerified) {
+		return <Navigate to='/' replace />;
+	}
+
+	return children;
+};
+
 function App() {
+
+	const { isCheckingAuth, checkAuth } = useAuthStore();
+
+	useEffect(() => {
+		checkAuth();
+	}, [checkAuth]);
+	if (isCheckingAuth) return <div>Loading</div>;
 
 	return (
 		<div
