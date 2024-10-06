@@ -1,10 +1,16 @@
-import { Route, Routes } from "react-router-dom";
+import { Navigate, Route, Routes } from "react-router-dom";
 import FloatingShape from "./components/FloatingShape";
 
 import SignUpPage from "./pages/SignUpPage";
 import LoginPage from "./pages/LoginPage";
+import EmailVerificationPage from "./pages/EmailVerificationPage";
+import DashboardPage from "./pages/DashboardPage";
+import ForgotPasswordPage from "./pages/ForgotPasswordPage";
+import ResetPasswordPage from "./pages/ResetPasswordPage";
 
+import LoadingSpinner from "./components/LoadingSpinner";
 
+import { Toaster } from "react-hot-toast";
 import { useAuthStore } from "./store/authStore";
 import { useEffect } from "react";
 
@@ -35,13 +41,13 @@ const RedirectAuthenticatedUser = ({ children }) => {
 };
 
 function App() {
-
 	const { isCheckingAuth, checkAuth } = useAuthStore();
 
 	useEffect(() => {
 		checkAuth();
 	}, [checkAuth]);
-	if (isCheckingAuth) return <div>Loading</div>;
+
+	if (isCheckingAuth) return <LoadingSpinner />;
 
 	return (
 		<div
@@ -54,19 +60,51 @@ function App() {
 
 			<Routes>
 				<Route
+					path='/'
+					element={
+						<ProtectedRoute>
+							<DashboardPage />
+						</ProtectedRoute>
+					}
+				/>
+				<Route
 					path='/signup'
 					element={
+						<RedirectAuthenticatedUser>
 							<SignUpPage />
+						</RedirectAuthenticatedUser>
 					}
 				/>
 				<Route
 					path='/login'
 					element={
+						<RedirectAuthenticatedUser>
 							<LoginPage />
+						</RedirectAuthenticatedUser>
+					}
+				/>
+				<Route path='/verify-email' element={<EmailVerificationPage />} />
+				<Route
+					path='/forgot-password'
+					element={
+						<RedirectAuthenticatedUser>
+							<ForgotPasswordPage />
+						</RedirectAuthenticatedUser>
 					}
 				/>
 
+				<Route
+					path='/reset-password/:token'
+					element={
+						<RedirectAuthenticatedUser>
+							<ResetPasswordPage />
+						</RedirectAuthenticatedUser>
+					}
+				/>
+				{/* catch all routes */}
+				<Route path='*' element={<Navigate to='/' replace />} />
 			</Routes>
+			<Toaster />
 		</div>
 	);
 }
